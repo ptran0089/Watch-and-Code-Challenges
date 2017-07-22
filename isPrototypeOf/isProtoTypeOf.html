@@ -1,0 +1,77 @@
+<script src="../simpletest.js"></script>
+<meta charset="utf-8">
+<script>
+
+function isPrototypeOf(prototype, obj) {
+
+  if (obj === null || obj === undefined) throw new TypeError;
+
+  if (typeof obj !== 'object' || typeof prototype !== 'object') return false;
+
+   if (Object.keys(prototype).length === 0 && Object.keys(prototype).length === 0) {
+      prototype.prop = 'a';
+    }
+
+  var prototypeKeys = Object.getOwnPropertyNames(prototype);
+  var objKeys = Object.getOwnPropertyNames(obj);
+
+  var filteredPrototypeKeys = prototypeKeys.filter(key => objKeys.indexOf(key) === -1);
+
+    if (filteredPrototypeKeys.every(key => obj[key] === undefined )) return false;
+
+    return true;
+}
+
+var human = {
+  talk: function() {
+    console.log('talk');
+  }
+};
+var canine = {
+  bark: function() {
+    console.log('bark');
+  }
+};
+var dog = Object.create(canine);
+dog.fetch = function() {
+  console.log('fetch');
+};
+var myDog = Object.create(dog);
+var empty = Object.create(null);
+
+ tests({
+  'It should throw TypeError if prototypeObject is undefined or null.': function () {
+    try {
+      isPrototypeOf(undefined, myDog);
+    } catch (error) {
+      eq(error instanceof TypeError, true);
+    }
+    try {
+      isPrototypeOf(null, myDog);
+    } catch (error) {
+      eq(error instanceof TypeError, true);
+    }
+  },
+  'It should return false if prototype or object is not an object': function() {
+    eq(isPrototypeOf({}, 'string'), false);
+    eq(isPrototypeOf(1, {}), false);
+  },
+  'It should return true if prototypeObject is in the prototype chain of testObject.': function () {
+    eq(isPrototypeOf(dog, myDog), true);
+  },
+  'It should return false if prototypeObject is not in the prototype chain of testObject.': function () {
+    eq(isPrototypeOf(human, myDog), false);
+  },
+  'It should work for any number of prototype links.': function () {
+    eq(isPrototypeOf(canine, myDog), true);
+  },
+  'It should return false if testObject does not have a prototype.': function () {
+    eq(isPrototypeOf(dog, empty), false);
+  },
+  'It should return true if testObject has a prototype and prototypeObject is Object.prototype.': function () {
+    eq(isPrototypeOf(Object.prototype, myDog), true);
+  }
+
+});
+</script>
+

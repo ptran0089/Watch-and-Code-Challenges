@@ -1,0 +1,145 @@
+<script src="../simpletest.js"></script>
+<meta charset="utf-8">
+<script>
+//forEach([1,2,3], function(number, index){
+//  console.log(index);
+//  console.log(number);
+//})
+
+//forEach([1,2,3], function(number, index, originalArray){
+//  console.log(originalArray);
+//});
+(function() {
+
+  var libraryStorage = {};
+  var temporaryStorage = {};
+
+  function librarySystem(libraryName, dependencies, callback) {
+
+    var argsArr = [];
+
+    if (arguments.length > 1) {                                               // If arguments.length > 1
+
+      if (dependencies.every(function(item) {                                 // Checks if required methods are in libraryStorage
+        return libraryStorage[item];          
+      })) {
+        dependencies.forEach(function(item) {                                 // If true, then store method in libraryStorage
+          argsArr.push(libraryStorage[item]);
+        });
+        libraryStorage[libraryName] = callback.apply(null, argsArr);
+
+      } else {
+        temporaryStorage.array = [];                                          // If false, create a temporary storage object to store the function without invoking it
+        temporaryStorage[libraryName] = callback;  
+        dependencies.forEach(function(item) {                                 // Also store dependencies array
+          temporaryStorage['array'].push(item);
+        });
+      }
+
+    } else {                                                                              // If arguments.length === 1
+      if (temporaryStorage[libraryName] && temporaryStorage.array.every(function(item) {  // Check if libraryName is a method of temporaryStorage and if the 
+        return libraryStorage[item];                                                      // required libraries are in libraryStorage
+      })) {         
+        var argsArr = [];
+        temporaryStorage.array.forEach(function(item) {                                   // Only if true, then transfer library from temporaryStorage to 
+          argsArr.push(libraryStorage[item]);                                             // libraryStorage
+        });                                                                               // This prevents librarySystem('workBlurb') from being prematurely
+                                                                                          // invoked before the required 'name' and 'work' methods are in place
+        libraryStorage[libraryName] = temporaryStorage[libraryName].apply(null, argsArr);
+        delete temporaryStorage[libraryName];                                             // Reset temporaryStorage: Delete property and methods from temporaryStorage
+        delete temporaryStorage.array;
+      }
+
+      if (libraryStorage[libraryName]) {
+        return libraryStorage[libraryName];       
+      }
+    }
+      
+
+  };
+
+  window.librarySystem = librarySystem;
+
+})();
+
+tests({
+
+  'librarySystem(\'workBlurb\') will only invoke when the required dependent libraries are in libraryStorage': function() {
+
+    librarySystem('name', [], function() {
+      return 'Gordon';
+    });
+
+    librarySystem('workBlurb', ['name', 'company'], function(name, company) {
+      return name + ' works at ' + company;
+      count++;
+    });
+
+    librarySystem('workBlurb');
+
+    librarySystem('company', [], function() {
+      return 'Watch and Code';
+    });
+
+    eq(librarySystem('workBlurb'), 'Gordon works at Watch and Code');
+
+  },
+
+  'Libraries can be created out of order': function() {
+
+    var count = 0;
+
+    librarySystem('workBlurb', ['name', 'company'], function(name, company) {
+      return name + ' works at ' + company;
+      count++;
+    });
+
+    librarySystem('name', [], function() {
+      return 'Gordon';
+    });
+
+    librarySystem('company', [], function() {
+      return 'Watch and Code';
+    });
+  },
+
+  'It should be able to create a library system and call a library': function() {
+    librarySystem('name', [], function() {
+      return 'Gordon';
+    });
+    eq(librarySystem('name'), 'Gordon');
+  },
+
+  'The library systems should be able to depend on each other ': function() {
+    librarySystem('name', [], function() {
+      return 'Gordon';
+    })
+    librarySystem('company', [], function() {
+      return 'Watch and Code';
+    })
+    librarySystem('workBlurb', ['name', 'company'], function(name, company) {
+      return name + ' works at ' + company;
+    })
+    eq(librarySystem('workBlurb'), "Gordon works at Watch and Code");
+  },
+
+  'Callback function for each library should only run once': function() {
+    var count = 0;
+    librarySystem('name', [], function() {
+      return 'Gordon';
+    })
+    librarySystem('company', [], function() {
+      return 'Watch and Code';
+    })
+    librarySystem('workBlurb', ['name', 'company'], function(name, company) {
+      count++;
+      return name + ' works at ' + company;
+    })
+    eq(librarySystem('workBlurb'), "Gordon works at Watch and Code");
+    eq(librarySystem('workBlurb'), "Gordon works at Watch and Code");
+    eq(count, 1);
+  }
+
+});
+</script>
+
