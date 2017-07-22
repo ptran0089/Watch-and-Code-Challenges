@@ -10,7 +10,7 @@ function isPrototypeOf(prototype, obj) {
 
    // If prototype doesn't have any properties, set a property for prototype to check for prototype link
    if (Object.keys(prototype).length === 0) {
-      prototype.prop = 'a';
+      prototype.link = 'link detected';
     }
 
   var prototypeKeys = Object.getOwnPropertyNames(prototype);
