@@ -8,7 +8,8 @@ function isPrototypeOf(prototype, obj) {
 
   if (typeof obj !== 'object' || typeof prototype !== 'object') return false;
 
-   if (Object.keys(prototype).length === 0 && Object.keys(prototype).length === 0) {
+   // If prototype doesn't have any properties, set a property for prototype to check for prototype link
+   if (Object.keys(prototype).length === 0) {
       prototype.prop = 'a';
     }
 
