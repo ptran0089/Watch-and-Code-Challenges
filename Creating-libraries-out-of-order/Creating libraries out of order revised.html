@@ -1,5 +1,4 @@
 <script src="../simpletest.js"></script>
-<meta charset="utf-8">
 <script>
 
 (function() {
@@ -48,19 +47,23 @@
 })();
 
 tests({
-
-  'librarySystem(\'workBlurb\') will only invoke when the required dependent libraries are in libraryStorage': function() {
+  'It should create, store and load libraries': function() {
     librarySystem('name', [], function() {
       return 'Gordon';
     });
-    librarySystem('workBlurb', ['name', 'company'], function(name, company) {
-      return name + ' works at ' + company;
-    });
-    librarySystem('workBlurb');
+    eq(librarySystem('name'), 'Gordon');
+  },
+  'The libraries should be able to depend on each other ': function() {
+    librarySystem('name', [], function() {
+      return 'Gordon';
+    })
     librarySystem('company', [], function() {
       return 'Watch and Code';
-    });
-    eq(librarySystem('workBlurb'), 'Gordon works at Watch and Code');
+    })
+    librarySystem('workBlurb', ['name', 'company'], function(name, company) {
+      return name + ' works at ' + company;
+    })
+    eq(librarySystem('workBlurb'), "Gordon works at Watch and Code");
   },
   'Libraries can be created out of order': function() {
     librarySystem('workBlurb', ['name', 'company'], function(name, company) {
@@ -74,23 +77,18 @@ tests({
     });
     eq(librarySystem('workBlurb'), 'Gordon works at Watch and Code');
   },
-  'It should be able to create a library system and call a library': function() {
+  'librarySystem(\'workBlurb\') will only invoke when the required dependent libraries are in libraryStorage': function() {
     librarySystem('name', [], function() {
       return 'Gordon';
     });
-    eq(librarySystem('name'), 'Gordon');
-  },
-  'The library systems should be able to depend on each other ': function() {
-    librarySystem('name', [], function() {
-      return 'Gordon';
-    })
-    librarySystem('company', [], function() {
-      return 'Watch and Code';
-    })
     librarySystem('workBlurb', ['name', 'company'], function(name, company) {
       return name + ' works at ' + company;
-    })
-    eq(librarySystem('workBlurb'), "Gordon works at Watch and Code");
+    });
+    librarySystem('workBlurb');
+    librarySystem('company', [], function() {
+      return 'Watch and Code';
+    });
+    eq(librarySystem('workBlurb'), 'Gordon works at Watch and Code');
   },
   'Callback function for each library should only run once': function() {
     var count = 0;
@@ -108,7 +106,6 @@ tests({
     eq(librarySystem('workBlurb'), "Gordon works at Watch and Code");
     eq(count, 1);
   }
-
 });
 
 </script>
