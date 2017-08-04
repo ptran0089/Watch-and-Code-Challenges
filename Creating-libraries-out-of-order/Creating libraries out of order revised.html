@@ -3,55 +3,48 @@
 <script>
 
 (function() {
-
   var libraryStorage = {};
   var cache = {};
 
   function librarySystem(libraryName, dependencies, callback) {
-
-    var argsArr = [];
+    var dependencyArray = [];
 
     if (arguments.length > 1) {
-
       if (libraryStorage[libraryName]) {
-        return (libraryName + ' already exists.')
+        return (libraryName + ' already exists.');
       }
 
       // Checks if the required libraries are in libraryStorage
-      if (dependencies.every(function(item) {return libraryStorage[item];})) {             
+      if (dependencies.every(function(item) {return libraryStorage[item];})) {
         dependencies.forEach(function(dependency) {
-          argsArr.push(libraryStorage[dependency]);                                        
+          dependencyArray.push(libraryStorage[dependency]);
         });
 
         // If true, store in libraryStorage
-        libraryStorage[libraryName] = callback.apply(null, argsArr);
+        libraryStorage[libraryName] = callback.apply(null, dependencyArray);
 
       // If false, store in temporary cache 
       } else {
-        cache[libraryName] = {                                                              
-          dependencies: dependencies, 
+        cache[libraryName] = {
+          dependencies: dependencies,
           callback: callback
-        }
-      } 
-
+        };
+      }
     } else if (arguments.length === 1) {
-
-      /*// Checks if libraryName is in cache and if the required libraries are in libraryStorage
-      If true, move library from cache to libraryStorage*/
-      if (libraryName in cache && cache[libraryName].dependencies.every(function(item) {return libraryStorage[item];})) {  
-        cache[libraryName].dependencies.forEach(function(dependency) {                                                      
-          argsArr.push(libraryStorage[dependency]);                                                                         
-        })
-        libraryStorage[libraryName] = cache[libraryName].callback.apply(null, argsArr);                                     
-      }                                                                                                                    
-
-      return libraryStorage[libraryName];
-    }
       
-  };
+      // Checks if libraryName is in cache and if the required libraries are in libraryStorage
+      // If true, move library from cache to libraryStorage
+      if (libraryName in cache && cache[libraryName].dependencies.every(function(item) {return libraryStorage[item];})) {
+        cache[libraryName].dependencies.forEach(function(dependency) {
+          dependencyArray.push(libraryStorage[dependency]);
+        });
+        libraryStorage[libraryName] = cache[libraryName].callback.apply(null, dependencyArray);
+        return libraryStorage[libraryName];
+      }
+    }   
+  }
 
   window.librarySystem = librarySystem;
-
 })();
 
 tests({
